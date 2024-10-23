@@ -46,7 +46,14 @@ def download_and_extract(url, zip_path, extract_path):
 
         # Unzip the file
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_path)
+            for member in zip_ref.namelist():
+                member_path = os.path.join(extract_path, os.path.relpath(member, start=os.path.commonpath(zip_ref.namelist())))
+                if member.endswith('/'):
+                    os.makedirs(member_path, exist_ok=True)
+                else:
+                    os.makedirs(os.path.dirname(member_path), exist_ok=True)
+                    with open(member_path, 'wb') as f:
+                        f.write(zip_ref.read(member))
 
         # Clean up the zip file
         os.remove(zip_path)
@@ -104,7 +111,7 @@ download(url, "data/finnishStemmer.txt")
 # Download FinnWordNet
 url = "https://www.kielipankki.fi/download/FinnWordNet/v2.0/FinnWordNet-2.0.zip"
 zip_path = "FinnWordNet-2.0.zip"
-extract_path = "data/FinnWordNet2.0"
+extract_path = "data/FinnWordNet"
 download_and_extract(url, zip_path, extract_path)
 
 ################################################################################
@@ -157,7 +164,7 @@ keywords = ["ilmastonmuutos", "päästö", "joustavuus", "kestävyys"]
 #     for article in highlighted_articles:
 #         print(article)
 #         print("\n" + "#" * 80 + "\n")
-
+"""
 dataset_directory = 'data/wikipedia-fi-2017-src/'
 # Function to read and search for a specific word in the dataset
 def search_wikipedia_pages(word, dataset_directory):
@@ -206,6 +213,123 @@ for word in keywords:
         print(highlighted_page)
     print("\n" + "-" * 80 + "\n")
 
+"""
+
+# Define the Finnish translations of the environmental terms
+terms = {
+    'ilmastonmuutos',
+    'päästö',
+    'joustavuus',
+    'ekologinen kestävyys'
+}
+
+
+# Function to load the extracted Wikipedia dataset
+def load_wikipedia_dataset(directory):
+    data = {}
+    data_titles = {}
+
+    # Iterate over all dataset parts
+    for filename in os.listdir(directory):
+        if filename.startswith("wiki_part") and filename.endswith(".VRT"):
+            file_path = os.path.join(directory, filename)
+            print(f"Processing file: {file_path}")
+
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+
+                # Use regex to find all documents within the <doc>...</doc> tags
+                docs = re.findall(r'<doc id="(.*?)" url="(.*?)" title="(.*?)">(.*?)</doc>', content, re.DOTALL)
+
+                # Process each document found
+                for doc_id, url, title, doc_content in docs:
+                    data_titles[title.casefold()] = {doc_id, url}
+
+                    # Only store the data if the title matches one of the specified terms
+                    if title.casefold() in terms:
+                        data[title.casefold()] = {
+                            'id': doc_id,
+                            'url': url,
+                            'content': doc_content,
+                            'file_path': file_path
+                        }
+
+    return data, data_titles
+
+dataset_directory = "data/wikipedia-fi-2017-src"  # Path to the extracted dataset
+data, data_titles = load_wikipedia_dataset(dataset_directory)
+
+# print(f"Loaded data: {data.items()}")
+
+#highlighted_content = re.sub(r'(<link entity=")(.*?)(">)(.*?)(</link>)', r'\1\2\3**\4**\5', data['ilmastonmuutos']['content'])
+#print(f"Highlighted Content: {highlighted_content}")
+
+# Function to highlight linked entities
+def highlight_linked_entities(content):
+    highlighted_content = re.sub(r'(<link entity=")(.*?)(">)(.*?)(</link>)', r'\1\2\3**\4**\5', content)
+
+    return highlighted_content
+
+for title, info in data.items():
+    highlighted_content = highlight_linked_entities(info['content'])
+    print(f"Title: {title}, highlighted Content: {highlighted_content}")
+
+
+# Function to extract third column data from sentences
+def extract_third_column(sentence):
+    third_column_data = []
+    lines = sentence.strip().split('\n')
+    for line in lines:
+        if line.strip() and not line.startswith('<'):
+            columns = line.split('\t')
+            if len(columns) > 2:
+                third_column_data.append(columns[2])
+    return third_column_data
+
+def process_paragraphs(input_text):
+    #print(f"Input Text: {input_text}")
+    paragraphs = re.findall(r'<paragraph>(.*?)</paragraph>', input_text, re.DOTALL)
+    all_third_column_data = []
+    #print(f"Paragraphs: {paragraphs}")
+    for paragraph in paragraphs:
+        sentences = re.findall(r'<sentence>(.*?)</sentence>', paragraph, re.DOTALL)
+        #print(f"Sentences: {sentences}")
+        for sentence in sentences:
+            #print(f"Sentence: {sentence}")
+            third_column_data = extract_third_column(sentence)
+            all_third_column_data.append(' '.join(third_column_data))
+    return all_third_column_data
+
+#print(f"Wikipedia data: {wikipedia_data['ilmastonmuutos']['content']}")
+
+# Process each item in wikipedia_data
+
+for item in data.items():
+    third_column_data = process_paragraphs(item[1]['content'])
+    print(f"Item {item} third column data:")
+    print(third_column_data)
+    print("\n" + "#" * 80 + "\n")
+
+
+sentences = re.findall(r'<sentence>(.*?)</sentence>', data['ilmastonmuutos']['content'], re.DOTALL)
+all_words = []
+
+if sentences:
+    for idx, sentence_content in enumerate(sentences):
+        print(f"Processing sentence {idx + 1}...")
+
+        # Split each sentence into individual lines
+        lines = sentence_content.strip().split('\n')
+
+        # Extract the word (3nd column) from each line
+        words = [line.split('\t')[2] for line in lines if line.strip()]
+        all_words.extend(words)
+else:
+    print("No sentences found in the document.")
+
+print(f"Words: {all_words}")
+
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -215,7 +339,7 @@ for word in keywords:
 # Preprocessing function to remove stopwords, stemming, and tokenize the document
 def preProcess(doc, stopwords):
     stopwords_set = set(stopwords)
-    sentences = sent_tokenize(doc.lower())
+    sentences = sent_tokenize(doc.casefold())
 
     tokens = []
     for sentence in sentences:
