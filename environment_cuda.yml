@@ -1,0 +1,22 @@
+name: CUDA
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.12.6
+  - pip
+  - matplotlib
+  - numpy
+  - jupyterlab
+  - pytorch
+  - pytorch-cuda
+  - torchvision
+  - opencv
+  - pillow
+  - scikit-learn
+  - gdown
+  - urllib3
+  - pip
+  - pip:
+    - -r requirements.txt
