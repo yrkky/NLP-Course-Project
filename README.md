@@ -81,6 +81,38 @@ deactivate
 pip install -r requirements.txt
 ```
 
+## Conda environment
+
+### Open Conda terminal on Cmd
+
+```bash
+%ProgramData%\miniconda3\condabin\activate
+```
+
+or
+
+```bash
+%UserProfile%\miniconda3\condabin\activate
+```
+
+### Create conda environment
+
+```bash
+conda env create -f environment_cuda.yml
+```
+
+### Activate conda environment
+
+```bash
+conda activate cuda
+```
+
+### Deactivate conda environment
+
+```bash
+conda deactivate
+```
+
 ## Development
 
 ### Formatting
