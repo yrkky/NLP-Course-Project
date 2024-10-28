@@ -83,6 +83,8 @@ pip install -r requirements.txt
 
 ## Conda environment
 
+Install miniconda from [here](https://docs.conda.io/en/latest/miniconda.html)
+
 ### Open Conda terminal on Cmd
 
 ```bash
