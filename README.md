@@ -130,6 +130,22 @@ Using Black formatter
 black .
 ```
 
+### Cleaning requirements
 
+Cleaning the requirements file removes the version numbers from the dependencies. This is useful when you want to install the dependencies and let pip handle compatibility between the dependencies.
 
+```bash
+pip freeze > requirements.txt
+```
 
+#### Running the cleaner
+
+```bash
+python utils/req_cleaner.py requirements.txt clean_requirements.txt
+```
+
+#### Installing the cleaned requirements
+
+```bash
+pip install -r clean_requirements.txt
+```
