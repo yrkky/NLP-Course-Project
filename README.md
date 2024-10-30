@@ -149,3 +149,9 @@ python utils/req_cleaner.py requirements.txt clean_requirements.txt
 ```bash
 pip install -r clean_requirements.txt
 ```
+
+#### Updating the cleaned requirements
+
+```bash
+pip freeze > requirements.txt
+```
