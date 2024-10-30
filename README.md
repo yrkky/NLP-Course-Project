@@ -48,6 +48,9 @@ the cosine similarity between the aggregated embedding vector of the correspondi
 
 
 ## Virtual environment
+
+You can use either virtual environment or conda environment. Choose one of them. If you are translating the words from Finnish to English, and you would like to use GPU to speed up the translations, you should use conda environment. Otherwise, you can use virtual environment.
+
 ### Create virtual environment
 
 ```bash
@@ -87,12 +90,14 @@ Install miniconda from [here](https://docs.conda.io/en/latest/miniconda.html)
 
 ### Open Conda terminal on Cmd
 
+When installed to everyone
 ```bash
 %ProgramData%\miniconda3\condabin\activate
 ```
 
 or
 
+When installed to user
 ```bash
 %UserProfile%\miniconda3\condabin\activate
 ```
